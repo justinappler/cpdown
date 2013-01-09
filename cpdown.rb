@@ -6,10 +6,10 @@ COPIED = "copied"
 LOGFILE = "log"
 
 # Logging
-$log = Logger.new(LOGFILE, File::WRONLY | File::APPEND)
-$log.level = Logger::INFO
+log = Logger.new(LOGFILE, File::WRONLY | File::APPEND)
+log.level = Logger::INFO
 
 # CopiedFile list
-copied = CopiedFiles.new(COPIED)
+copied = CopiedFiles.new(COPIED, log)
 
 
