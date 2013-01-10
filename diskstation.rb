@@ -25,19 +25,6 @@ class Diskstation
         end
     end
     
-    def copyFile(localPath, remotePath)
-        # If the remote path does not exist
-        #    Create the remote path
-        
-        # Checksum the local path
-        localChecksum = localChecksum(localPath)
-        $log.info(" -- Local Checksum: #{localChecksum}") unless !localChecksum
-
-        # Checksum the remote path
-        remoteChecksum = remoteChecksum(remotePath)
-        
-    end
-    
     def copyEpisode(file, path, fileinfo)
         remoteFilename = getEpisodeRemoteFilename(file, fileinfo)
         $log.info(" -- Copying to #{remoteFilename}")
@@ -48,4 +35,24 @@ class Diskstation
         "#{TV_ROOT}#{fileinfo.title}/Season #{fileinfo.season.to_s}/#{filename}"
     end
     
+    def copyFile(localPath, remotePath)
+        # If the remote path does not exist
+        #    Create the remote path
+        
+        # Checksum the local path
+        localChecksum = localChecksum(localPath)
+        $log.info(" -- Local Checksum: #{localChecksum}") unless !localChecksum
+
+        # Checksum the remote path
+        rcs = Checksum::RemoteChecksum.new(@host, @user)
+        remoteChecksum = rcs.checksum(remotePath)
+        
+        # If they match, we're done, just log it!
+        if localChecksum == remoteChecksum do
+            $log.warn("Tried to copy existing file with matching checksum: #{localPath}")
+            return true
+        end
+        
+    end
+
 end

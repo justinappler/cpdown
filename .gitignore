@@ -16,3 +16,9 @@ tmp
 .yardoc
 _yardoc
 doc/
+
+
+# cpdown specific
+log
+copied
+torrents/
