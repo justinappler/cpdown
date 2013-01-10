@@ -56,7 +56,7 @@ class SshUtils
                 end
             end
 
-            log.error(" -- Couldn't chmod the fole") unless chmod(remotePath, "777")
+            $log.error(" -- Couldn't chmod the fole") unless chmod(remotePath, "777")
             true
         rescue Net::SCP::Error => e
             $log.error(" -- Copy Error: #{e.message}")
