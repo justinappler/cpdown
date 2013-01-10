@@ -41,6 +41,7 @@ class Diskstation
         # If the remote path does not exist
         if not ssh.pathExists?(remotePath)
             $log.info(" -- Created Path: #{remotePath}") unless !ssh.createPath(remotePath)
+            ssh.chmod(remotePath, "777")
         end
         
         # Checksum the local path

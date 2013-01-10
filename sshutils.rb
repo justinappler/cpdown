@@ -39,17 +39,24 @@ class SshUtils
         result[2] == 0
     end
     
+    def chmod(path, perms)
+        result = sshExec("chmod -R #{perms} \"#{path}\"")
+        result[2] == 0
+    end
+    
     def copy(localPath, remotePath)
         $log.info(" -- Copying #{localPath} to #{remotePath}")
         lastPercent = -1
         begin
             @ssh.scp.upload!(localPath, remotePath, :recursive => true) do |ch, name, sent, total|
-                percent = (sent.to_f * 100 / total.to_f).to_i
+                percent = total.to_i == 0 ? 0 : (sent.to_f * 100 / total.to_f).to_i
                 if percent % 25 == 0 && percent > lastPercent
                     $log.info(" -- Copy Status for #{name}: #{percent}%")
                     lastPercent = percent
                 end
             end
+
+            log.error(" -- Couldn't chmod the fole") unless chmod(remotePath, "777")
             true
         rescue Net::SCP::Error => e
             $log.error(" -- Copy Error: #{e.message}")
