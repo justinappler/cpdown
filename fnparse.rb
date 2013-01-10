@@ -6,6 +6,8 @@ module FNParse
     
     @@EP_REG_1 = /(.+)\.S([0-9]{1,2})E([0-9]{1,2})/
     @@EP_REG_2 = /(.+)\.([0-9]{1,2})x([0-9]{1,2})/
+    
+    @@DATE_EP_REG_1 = /(.+)\.201[0-9]{1}\.[0-9]{1,2}\.[0-9]{1,2}/
 
     def self.parse(filename)
         $log.info('Parsing filename: ' + filename.to_s)
@@ -13,15 +15,12 @@ module FNParse
     end
     
     def self.isEpisode(filename)
-        if (not (result = filename.scan(@@EP_REG_1)).empty?)
-            return episodeResult(result[0][0], result[0][1], result[0][2])
+        result = filename.scan(@@EP_REG_1)
+        if (result.empty?)
+            result = filename.scan(@@EP_REG_2)
         end
         
-        if (not (result = filename.scan(@@EP_REG_2)).empty?)
-            return episodeResult(result[0][0], result[0][1], result[0][2])
-        end
-            
-        return false
+        return episodeResult(result[0][0], result[0][1], result[0][2]) unless result.empty?
     end
     
     def self.episodeResult(title, season, episode)
@@ -36,7 +35,20 @@ module FNParse
     end
     
     def self.isDateEpisode(filename)
-        false
+        if (not (result = filename.scan(@@DATE_EP_REG_1)).empty?)
+            return dateEpisodeResult(result[0][0])
+        end
+    end
+    
+    def self.dateEpisodeResult(title)
+        r = FNParseResult.new(
+            FNParse::DATE_EPISODE,
+            title.gsub(/[\._]/, ' ').gsub(/^[a-z]|\s[a-z]/) { |a| a.upcase }.chomp,
+            nil,
+            nil
+        )
+        $log.info("Date Episode Parsed: #{r.title}")
+        r
     end
     
     def self.isMovie(filename)

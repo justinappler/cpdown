@@ -47,9 +47,16 @@ class SshUtils
     def copy(localPath, remotePath)
         $log.info(" -- Copying #{localPath} to #{remotePath}")
         lastPercent = -1
+        currentFile = nil
         begin
             @ssh.scp.upload!(localPath, remotePath, :recursive => true) do |ch, name, sent, total|
+                if not name.eql?(currentFile)
+                    currentFile = name
+                    lastPercent = -1
+                end
+                
                 percent = total.to_i == 0 ? 0 : (sent.to_f * 100 / total.to_f).to_i
+                
                 if percent % 25 == 0 && percent > lastPercent
                     $log.info(" -- Copy Status for #{name}: #{percent}%")
                     lastPercent = percent

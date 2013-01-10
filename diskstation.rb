@@ -19,6 +19,8 @@ class Diskstation
     def copy(filename, path, fileinfo)
         if fileinfo.type == FNParse::EPISODE
             copyEpisode(filename, path, fileinfo)
+        elsif fileinfo.type == FNParse::DATE_EPISODE
+            copyDateEpisode(filename, path, fileinfo)
         else
             false
         end
@@ -33,6 +35,17 @@ class Diskstation
     
     def getEpisodeRemotePath(filename, fileinfo)
         "#{TV_ROOT}#{fileinfo.title}/Season #{fileinfo.season.to_s}/"
+    end
+    
+    def copyDateEpisode(filename, path, fileinfo)
+        $log.info("Copying Date Episode \'#{filename}\'")
+        remotePath = getDateEpisodeRemotePath(filename, fileinfo)
+        $log.info(" -- Copying to #{remotePath}")
+        copyFile(path, remotePath, filename)
+    end
+    
+    def getDateEpisodeRemotePath(filename, fileinfo)
+        "#{TV_ROOT}#{fileinfo.title}/"
     end
     
     def copyFile(localPath, remotePath, filename)
