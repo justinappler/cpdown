@@ -1,5 +1,4 @@
 require 'digest/md5'
-load 'sshutils.rb'
 
 module Checksum
 
@@ -22,35 +21,27 @@ module Checksum
         Digest::MD5.hexdigest(cathash)
     end
     
-    class RemoteChecksum
-        @host = nil
-        @user = nil
-        @password = nil
+    class SshChecksum
+        @ssh = nil
         
-        def initialize(host, user, password = nil)
-            @host = host
-            @user = user
-            @password = password
+        def initialize(ssh)
+            @ssh = ssh
         end
     
         def checksum(path)
-            sshutil = SshUtils.start(@host, @user)
-            cksum = _checksum(sshutil, path)
-            sshutil.close
-            cksum
-        end
-    
-        def _checksum(sshutil, path)
-            sshutil.isDirectory(path) ? checksumDir(sshutil, path) : sshutil.checksum(path)
+            @ssh.isDirectory(path) ? checksumDir(path) : @ssh.checksum(path)
         end
         
-        def checksumDir(sshutil, path)
-            contents = sshutil.getDirectoryContents(path)
+        private
+        
+        def checksumDir(path)
+            contents = @ssh.getDirectoryContents(path)
 
             cathash = ""
             contents.each do |file|
-                cathash << _checksum(sshutil, File.join(path, file))
+                cathash << checksum(File.join(path, file))
             end
+            
             Digest::MD5.hexdigest(cathash)
         end
     end

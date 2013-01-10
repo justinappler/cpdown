@@ -34,6 +34,5 @@ new = Dir.entries(TORRENT_DIR).select { |f|
 new.each do |file|
     fileinfo = FNParse::parse(file)
     copied.add(file) unless !ds.copy(file, File.join(TORRENT_DIR, file), fileinfo)
-    copied.save
 end
 

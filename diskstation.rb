@@ -1,5 +1,6 @@
 require 'net/ssh'
 load 'checksum.rb'
+load 'sshutils.rb'
 
 class Diskstation
     DS1_ROOT = "/volume1/Diskstation/Videos/"
@@ -16,43 +17,52 @@ class Diskstation
     end
     
     def copy(filename, path, fileinfo)
-        $log.info("Copying file \'#{filename}\'")
-
         if fileinfo.type == FNParse::EPISODE
-            copyEpisode(filename, path, fileinfo, cksum)
+            copyEpisode(filename, path, fileinfo)
         else
             false
         end
     end
     
-    def copyEpisode(file, path, fileinfo)
-        remoteFilename = getEpisodeRemoteFilename(file, fileinfo)
-        $log.info(" -- Copying to #{remoteFilename}")
-        copyFile(path, remoteFilename)
+    def copyEpisode(filename, path, fileinfo)
+        $log.info("Copying Episode \'#{filename}\'")
+        remotePath = getEpisodeRemotePath(filename, fileinfo)
+        $log.info(" -- Copying to #{remotePath}")
+        copyFile(path, remotePath, filename)
     end
     
-    def getEpisodeRemoteFilename(filename, fileinfo)
-        "#{TV_ROOT}#{fileinfo.title}/Season #{fileinfo.season.to_s}/#{filename}"
+    def getEpisodeRemotePath(filename, fileinfo)
+        "#{TV_ROOT}#{fileinfo.title}/Season #{fileinfo.season.to_s}/"
     end
     
-    def copyFile(localPath, remotePath)
+    def copyFile(localPath, remotePath, filename)
+        ssh = SshUtils.start(@host, @user)
+        
         # If the remote path does not exist
-        #    Create the remote path
+        puts "Path Exists? #{ssh.pathExists?(remotePath)} -> #{remotePath}"
+        if not ssh.pathExists?(remotePath)
+            $log.info("Created Path: #{remotePath}") unless !ssh.createPath(remotePath)
+        end
         
         # Checksum the local path
-        localChecksum = localChecksum(localPath)
+        localChecksum = Checksum::checksum(localPath)
         $log.info(" -- Local Checksum: #{localChecksum}") unless !localChecksum
 
         # Checksum the remote path
-        rcs = Checksum::RemoteChecksum.new(@host, @user)
+        rcs = Checksum::SshChecksum.new(ssh)
         remoteChecksum = rcs.checksum(remotePath)
+        $log.info(" -- Remote Checksum: #{remoteChecksum}") unless !remoteChecksum
         
         # If they match, we're done, just log it!
-        if localChecksum == remoteChecksum do
+        if localChecksum == remoteChecksum
             $log.warn("Tried to copy existing file with matching checksum: #{localPath}")
             return true
         end
         
+        ssh.copy(localPath, remotePath)
+        
+        ssh.close
+        true
     end
 
 end

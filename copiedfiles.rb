@@ -17,6 +17,7 @@ class CopiedFiles
     def add(file)
         $log.info('Added ' + file + ' to copied list')
         @copied.push file
+        save
     end
     
     def exists(file)
