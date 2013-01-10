@@ -41,10 +41,16 @@ class SshUtils
     
     def copy(localPath, remotePath)
         $log.info(" -- Copying #{localPath} to #{remotePath}")
-        @ssh.scp.upload!(localPath, remotePath, :recursive => true) do |ch, name, sent, total|
-            print "\r#{name}: #{(sent.to_f * 100 / total.to_f).to_i}%"
+        begin
+            @ssh.scp.upload!(localPath, remotePath, :recursive => true) do |ch, name, sent, total|
+                percent = (sent.to_f * 100 / total.to_f).to_i
+                $log.info(" -- Copy Status for #{name}: #{percent}%") unless percent % 25 != 0
+            end
+            true
+        rescue Net::SCP::Error => e
+            $log.error(" -- Copy Error: #{e.message}")
+            false
         end
-        true
     end
     
     private 
@@ -74,8 +80,6 @@ class SshUtils
             end
         end
         @ssh.loop
-        puts "Exit #{exit_code} for #{command}"
-        puts "  Err: #{stderr_data}" if exit_code != 0
         [stdout_data, stderr_data, exit_code]
     end
 end

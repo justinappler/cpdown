@@ -39,9 +39,8 @@ class Diskstation
         ssh = SshUtils.start(@host, @user)
         
         # If the remote path does not exist
-        puts "Path Exists? #{ssh.pathExists?(remotePath)} -> #{remotePath}"
         if not ssh.pathExists?(remotePath)
-            $log.info("Created Path: #{remotePath}") unless !ssh.createPath(remotePath)
+            $log.info(" -- Created Path: #{remotePath}") unless !ssh.createPath(remotePath)
         end
         
         # Checksum the local path
@@ -50,19 +49,19 @@ class Diskstation
 
         # Checksum the remote path
         rcs = Checksum::SshChecksum.new(ssh)
-        remoteChecksum = rcs.checksum(remotePath)
+        remoteChecksum = rcs.checksum(File.join(remotePath, filename))
         $log.info(" -- Remote Checksum: #{remoteChecksum}") unless !remoteChecksum
         
         # If they match, we're done, just log it!
-        if localChecksum == remoteChecksum
-            $log.warn("Tried to copy existing file with matching checksum: #{localPath}")
+        if localChecksum.eql?(remoteChecksum)
+            $log.warn(" -- Tried to copy existing file with matching checksum: #{localPath}")
             return true
         end
         
-        ssh.copy(localPath, remotePath)
+        copyResult = ssh.copy(localPath, remotePath)
         
         ssh.close
-        true
+        copyResult
     end
 
 end
