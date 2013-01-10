@@ -7,7 +7,7 @@ module Checksum
             return Checksum.checksumDir(path)
         end
         
-        result = `md5sum \"#{path}"`
+        result = `md5sum \"#{path}\"`
         result.split(' ')[0] unless result.start_with?('md5sum:')
     end
     
