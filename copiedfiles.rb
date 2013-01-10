@@ -1,22 +1,21 @@
 class CopiedFiles
     @copied = nil
     @copiedFilename = nil
-    @log = nil
     
-    def initialize(filename, log)
-    	@log = log
+    def initialize(filename)
         @copiedFilename = filename
         
         begin
             @copied = IO.readlines(@copiedFilename).collect { |line| line.chomp }
-            @log.info('Opened Copied File list, Size: ' + @copied.length.to_s)
+            $log.info('Opened Copied File list, Size: ' + @copied.length.to_s)
         rescue
             @copied = Array.new()
-            @log.warn('No Copied File list found, starting empty')
+            $log.warn('No Copied File list found, starting empty')
         end
 	end
     
     def add(file)
+        $log.info('Added ' + file + ' to copied list')
         @copied.push file
     end
     
@@ -29,9 +28,9 @@ class CopiedFiles
             f = File.open(@copiedFilename, 'w')
             @copied.each { |line| f.write(line + "\n") }
             f.close
-            @log.info('Saved the copied file list')
+            $log.info('Saved the copied file list')
         rescue
-            @log.error('Couldn\'t save the Copied Files list')
+            $log.error('Couldn\'t save the Copied Files list')
         end
     end
 end
