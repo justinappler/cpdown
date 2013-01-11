@@ -3,7 +3,7 @@ load 'checksum.rb'
 load 'sshutils.rb'
 
 class Diskstation
-    DS1_ROOT = "/volume1/Diskstation/Videos/"
+    DS1_ROOT = "/volume1/DiskStation/Videos/"
     DS2_ROOT = "/volume2/Diskstation 2/Videos/"
     MOVIE_ROOT = DS1_ROOT + "Movies/"
     TV_ROOT = DS2_ROOT + "TV/"
@@ -21,6 +21,8 @@ class Diskstation
             copyEpisode(filename, path, fileinfo)
         elsif fileinfo.type == FNParse::DATE_EPISODE
             copyDateEpisode(filename, path, fileinfo)
+        elsif fileinfo.type == FNParse::MOVIE
+            copyMovie(filename, path, fileinfo)
         else
             false
         end
@@ -46,6 +48,17 @@ class Diskstation
     
     def getDateEpisodeRemotePath(filename, fileinfo)
         "#{TV_ROOT}#{fileinfo.title}/"
+    end
+    
+    def copyMovie(filename, path, fileinfo)
+        $log.info("Copying Movie \'#{filename}\'")
+        remotePath = getMoviePath(filename, fileinfo)
+        $log.info(" -- Copying to #{remotePath}")
+        copyFile(path, remotePath, filename)
+    end
+    
+    def getMoviePath(filename, fileinfo)
+        "#{MOVIE_ROOT}#{fileinfo.title}/"
     end
     
     def copyFile(localPath, remotePath, filename)

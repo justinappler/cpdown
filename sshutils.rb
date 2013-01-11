@@ -36,6 +36,7 @@ class SshUtils
     
     def createPath(path)
         result = sshExec("mkdir -p \"#{path}\"")
+        $log.error("Couldn't create path! #{result[1]}") if result[2] != 0
         result[2] == 0
     end
     

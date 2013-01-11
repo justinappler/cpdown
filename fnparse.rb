@@ -8,6 +8,8 @@ module FNParse
     @@EP_REG_2 = /(.+)\.([0-9]{1,2})x([0-9]{1,2})/
     
     @@DATE_EP_REG_1 = /(.+)\.201[0-9]{1}\.[0-9]{1,2}\.[0-9]{1,2}/
+    
+    @@MOVIE_REG_1 = /(.*)[\. ](201[0-9]{1})[\. ](DVDRip|BDRip|HDRip)/
 
     def self.parse(filename)
         $log.info('Parsing filename: ' + filename.to_s)
@@ -52,7 +54,20 @@ module FNParse
     end
     
     def self.isMovie(filename)
-        false
+        if (not (result = filename.scan(@@MOVIE_REG_1)).empty?)
+            return movieResult(result[0][0])
+        end
+    end
+    
+    def self.movieResult(title)
+        r = FNParseResult.new(
+            FNParse::MOVIE,
+            title.gsub(/[\._]/, ' ').gsub(/^[a-z]|\s[a-z]/) { |a| a.upcase }.chomp,
+            nil,
+            nil
+        )
+        $log.info("Movie Parsed: #{r.title}")
+        r
     end
     
     def self.isUnknown(filename)
