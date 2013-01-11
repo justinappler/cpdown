@@ -37,4 +37,5 @@ rescue
 ensure
     lockfile.flock(File::LOCK_UN) unless lockfile.nil?
     lockfile.close unless lockfile.nil?
+    $log.info('Cpdown complete, lock released')
 end
